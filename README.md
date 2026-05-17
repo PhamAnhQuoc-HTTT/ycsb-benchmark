@@ -28,7 +28,7 @@
 
 ## Cấu trúc repo
 
-\\\
+```
 ycsb-benchmark/
 ├── docker/              # Docker Compose cho 3 hệ thống
 │   ├── mongodb/
@@ -45,7 +45,7 @@ ycsb-benchmark/
 │   └── notebooks/       # Jupyter notebooks
 ├── report/              # Báo cáo + tài liệu tham khảo
 └── docs/                # Hướng dẫn tái tạo môi trường
-\\\
+```
 
 ## Tài liệu nguồn
 
