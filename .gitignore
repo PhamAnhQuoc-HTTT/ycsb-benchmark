@@ -1,0 +1,45 @@
+﻿# === Docker ===
+docker/*/data/
+docker/*/logs/
+*.pid
+
+# === YCSB ===
+ycsb-0.17.0/
+*.log
+analysis/results/raw_logs/*
+!analysis/results/raw_logs/.gitkeep
+
+# === Python ===
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.pytest_cache/
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === OS ===
+desktop.ini
+
+# === Report drafts (giữ riêng) ===
+report/drafts/*.docx
+report/drafts/*.pdf
+!report/drafts/.gitkeep
+
+# === Secrets ===
+.env
+*.key
+*.pem
+
+# === Build artifacts ===
+*.class
+*.jar
+target/
