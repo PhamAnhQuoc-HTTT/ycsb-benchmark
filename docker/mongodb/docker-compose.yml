@@ -1,0 +1,93 @@
+﻿# MongoDB Replica Set 3-node for YCSB benchmark
+# Topology: mongo1 (PRIMARY) + mongo2, mongo3 (SECONDARY)
+# Network: bridge, shared between 3 nodes
+# Auth: disabled (benchmark environment, not production)
+
+services:
+  mongo1:
+    image: mongo:7.0
+    container_name: ycsb-mongo1
+    hostname: mongo1
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    networks:
+      - mongo-rs
+    volumes:
+      - mongo1-data:/data/db
+      - mongo1-config:/data/configdb
+    command: ["mongod", "--replSet", "ycsb-rs", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+  mongo2:
+    image: mongo:7.0
+    container_name: ycsb-mongo2
+    hostname: mongo2
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    networks:
+      - mongo-rs
+    volumes:
+      - mongo2-data:/data/db
+      - mongo2-config:/data/configdb
+    command: ["mongod", "--replSet", "ycsb-rs", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+  mongo3:
+    image: mongo:7.0
+    container_name: ycsb-mongo3
+    hostname: mongo3
+    restart: unless-stopped
+    ports:
+      - "27019:27017"
+    networks:
+      - mongo-rs
+    volumes:
+      - mongo3-data:/data/db
+      - mongo3-config:/data/configdb
+    command: ["mongod", "--replSet", "ycsb-rs", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+networks:
+  mongo-rs:
+    driver: bridge
+    name: ycsb-mongo-rs-net
+
+volumes:
+  mongo1-data:
+  mongo1-config:
+  mongo2-data:
+  mongo2-config:
+  mongo3-data:
+  mongo3-config:
