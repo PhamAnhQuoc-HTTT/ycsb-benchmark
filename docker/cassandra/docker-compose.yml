@@ -1,0 +1,115 @@
+﻿# Cassandra 4.1 cluster 3-node for YCSB benchmark
+# Topology: masterless ring, all 3 nodes are seeds
+# Network: bridge, shared
+# Bootstrap order: cass1 -> cass2 -> cass3 (serialized via depends_on)
+# Auth: disabled (benchmark environment)
+
+services:
+  cass1:
+    image: cassandra:4.1
+    container_name: ycsb-cass1
+    hostname: cass1
+    restart: unless-stopped
+    ports:
+      - "9042:9042"
+    networks:
+      - cass-cluster
+    volumes:
+      - cass1-data:/var/lib/cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "ycsb-cluster"
+      CASSANDRA_DC: "dc1"
+      CASSANDRA_RACK: "rack1"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+      CASSANDRA_SEEDS: "cass1,cass2,cass3"
+      MAX_HEAP_SIZE: "1G"
+      HEAP_NEWSIZE: "200M"
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status | grep -E '^UN\\s+'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+  cass2:
+    image: cassandra:4.1
+    container_name: ycsb-cass2
+    hostname: cass2
+    restart: unless-stopped
+    depends_on:
+      cass1:
+        condition: service_healthy
+    ports:
+      - "9043:9042"
+    networks:
+      - cass-cluster
+    volumes:
+      - cass2-data:/var/lib/cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "ycsb-cluster"
+      CASSANDRA_DC: "dc1"
+      CASSANDRA_RACK: "rack1"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+      CASSANDRA_SEEDS: "cass1,cass2,cass3"
+      MAX_HEAP_SIZE: "1G"
+      HEAP_NEWSIZE: "200M"
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status | grep -E '^UN\\s+'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+  cass3:
+    image: cassandra:4.1
+    container_name: ycsb-cass3
+    hostname: cass3
+    restart: unless-stopped
+    depends_on:
+      cass2:
+        condition: service_healthy
+    ports:
+      - "9044:9042"
+    networks:
+      - cass-cluster
+    volumes:
+      - cass3-data:/var/lib/cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "ycsb-cluster"
+      CASSANDRA_DC: "dc1"
+      CASSANDRA_RACK: "rack1"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+      CASSANDRA_SEEDS: "cass1,cass2,cass3"
+      MAX_HEAP_SIZE: "1G"
+      HEAP_NEWSIZE: "200M"
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status | grep -E '^UN\\s+'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+networks:
+  cass-cluster:
+    driver: bridge
+    name: ycsb-cass-cluster-net
+
+volumes:
+  cass1-data:
+  cass2-data:
+  cass3-data:
