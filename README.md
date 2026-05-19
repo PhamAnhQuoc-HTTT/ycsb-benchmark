@@ -51,11 +51,3 @@ ycsb-benchmark/
 
 Bài báo cơ sở:
 > E. Dritsas and M. Trigka, "Database Systems in the Big Data Era: Architectures, Performance, and Open Challenges," *IEEE Access*, vol. 13, pp. 95068-95084, 2025.
-
-## Trạng thái
-
-🚧 **In progress** — Phase 0 (Environment Setup) hoàn thành. Bắt đầu Phase 1.
-
----
-
-**Last updated**: 2026-05-17
