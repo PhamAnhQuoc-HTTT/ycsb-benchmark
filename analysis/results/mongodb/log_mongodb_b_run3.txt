@@ -1,0 +1,54 @@
+/opt/java/openjdk/bin/java -cp /opt/ycsb/mongodb-binding/conf:/opt/ycsb/conf:/opt/ycsb/lib/core-0.17.0.jar:/opt/ycsb/lib/HdrHistogram-2.1.4.jar:/opt/ycsb/lib/jackson-mapper-asl-1.9.4.jar:/opt/ycsb/lib/htrace-core4-4.1.0-incubating.jar:/opt/ycsb/lib/jackson-core-asl-1.9.4.jar:/opt/ycsb/mongodb-binding/lib/logback-classic-1.1.2.jar:/opt/ycsb/mongodb-binding/lib/snappy-java-1.1.7.1.jar:/opt/ycsb/mongodb-binding/lib/mongodb-async-driver-2.0.1.jar:/opt/ycsb/mongodb-binding/lib/logback-core-1.1.2.jar:/opt/ycsb/mongodb-binding/lib/mongodb-binding-0.17.0.jar:/opt/ycsb/mongodb-binding/lib/slf4j-api-1.7.25.jar:/opt/ycsb/mongodb-binding/lib/mongo-java-driver-3.8.0.jar site.ycsb.Client -db site.ycsb.db.MongoDbClient -P /workloads/workload_b.properties -p mongodb.url=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/ycsb?replicaSet=ycsb-rs -p mongodb.writeConcern=majority -p recordcount=1000000 -p operationcount=1000000 -p threadcount=16 -t
+Command line: -db site.ycsb.db.MongoDbClient -P /workloads/workload_b.properties -p mongodb.url=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/ycsb?replicaSet=ycsb-rs -p mongodb.writeConcern=majority -p recordcount=1000000 -p operationcount=1000000 -p threadcount=16 -t
+YCSB Client 0.17.0
+
+Loading workload...
+Starting test.
+mongo client connection created with mongodb://mongo1:27017,mongo2:27017,mongo3:27017/ycsb?replicaSet=ycsb-rs&w=majority
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+[OVERALL], RunTime(ms), 252780
+[OVERALL], Throughput(ops/sec), 3956.009177941293
+[TOTAL_GCS_G1_Young_Generation], Count, 163
+[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 852
+[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.33705198196059816
+[TOTAL_GCS_G1_Old_Generation], Count, 0
+[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0
+[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0
+[TOTAL_GCs], Count, 163
+[TOTAL_GC_TIME], Time(ms), 852
+[TOTAL_GC_TIME_%], Time(%), 0.33705198196059816
+[READ], Operations, 950211
+[READ], AverageLatency(us), 2442.827973997354
+[READ], MinLatency(us), 153
+[READ], MaxLatency(us), 6197247
+[READ], 95thPercentileLatency(us), 4975
+[READ], 99thPercentileLatency(us), 48383
+[READ], Return=OK, 950211
+[CLEANUP], Operations, 16
+[CLEANUP], AverageLatency(us), 1516.8125
+[CLEANUP], MinLatency(us), 2
+[CLEANUP], MaxLatency(us), 24239
+[CLEANUP], 95thPercentileLatency(us), 7
+[CLEANUP], 99thPercentileLatency(us), 24239
+[UPDATE], Operations, 49789
+[UPDATE], AverageLatency(us), 33740.16469501296
+[UPDATE], MinLatency(us), 3728
+[UPDATE], MaxLatency(us), 6299647
+[UPDATE], 95thPercentileLatency(us), 69887
+[UPDATE], 99thPercentileLatency(us), 132351
+[UPDATE], Return=OK, 49789

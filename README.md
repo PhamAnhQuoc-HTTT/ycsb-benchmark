@@ -10,8 +10,8 @@ GVHD: ThS. Nguyễn Hồ Duy Trí
 
 | Họ tên | MSSV | Vai trò |
 |--------|------|---------|
-| Phạm Anh Quốc | 23521307 | Chủ nhiệm — infrastructure (Docker, YCSB runner), benchmark, visualization |
-| Trần Thanh Huy | 23520649 | Lý thuyết, YCSB workload config, run scripts, analysis |
+| Phạm Anh Quốc | 23521307 | Chủ nhiệm — infrastructure (Docker, YCSB runner), benchmark, parse data |
+| Trần Thanh Huy | 23520649 | Lý thuyết, workload config, visualize, phân tích |
 
 ## Hệ thống đánh giá
 
@@ -24,8 +24,8 @@ GVHD: ThS. Nguyễn Hồ Duy Trí
 ## Kịch bản thực nghiệm
 
 1. **4 workload YCSB** (A/B/C/F) × 3 hệ thống × 3 lần chạy = 36 benchmark runs
-2. **Scalability test** — Workload A với 1 → 2 → 3 node
-3. **Fault tolerance test** — Dừng 1 node giữa benchmark, đo recovery time
+2. **Scalability test** — Workload A với 1 → 2 → 3 node (tùy chọn)
+3. **Fault tolerance test** — Dừng 1 node giữa benchmark, đo recovery time (tùy chọn)
 
 Chỉ số đo: Throughput (ops/sec), Latency p50/p95/p99 (ms), Recovery time (ms).
 
@@ -40,7 +40,7 @@ Windows host (Quốc)
     └── ycsb-runner image              → join network của DB cần benchmark
 ```
 
-YCSB chạy **trong container** (image `ycsb-runner:0.17.0`), join chung Docker network với DB. Nhờ đó YCSB resolve hostname `mongo1/cass1/crdb1...` qua Docker DNS internal, không bị vướng port-mapping NAT của Docker Desktop trên Windows. Đây là điểm thiết kế quan trọng — sẽ trình bày trong Chương 3 báo cáo.
+YCSB chạy **trong container** (image `ycsb-runner:0.17.0`), join chung Docker network với DB. Nhờ đó YCSB resolve hostname `mongo1/cass1/crdb1...` qua Docker DNS internal, không bị vướng port-mapping NAT của Docker Desktop trên Windows.
 
 ## Yêu cầu môi trường
 
@@ -48,11 +48,10 @@ YCSB chạy **trong container** (image `ycsb-runner:0.17.0`), join chung Docker 
 |------|---------|---------|
 | Docker Desktop | 24.0+ với WSL2 backend | Cấp ≥ 16GB RAM cho WSL2 (file `.wslconfig`) |
 | Java | 11 (Temurin/Adoptium) | Cho YCSB local; runner image tự bundle Java 11 |
-| Python | 3.11 | Cho phân tích log (pandas, matplotlib) |
-| Git | 2.40+ | |
-| RAM máy | ≥ 16GB | Chạy 1 cluster 3-node cần ~6GB |
+| Python | 3.11 | Cho parse log + visualize |
+| Git Bash | (kèm Git for Windows) | Để chạy script `.sh` trên Windows |
 
-Cấu hình `~/.wslconfig` đề xuất:
+Cấu hình `~/.wslconfig`:
 
 ```ini
 [wsl2]
@@ -70,156 +69,78 @@ git clone https://github.com/PhamAnhQuoc-HTTT/ycsb-benchmark.git
 cd ycsb-benchmark
 ```
 
-### 2. Build YCSB runner image (làm 1 lần)
+### 2. Build YCSB runner image (làm 1 lần, ~25-30 phút)
 
 ```bash
 docker build -t ycsb-runner:0.17.0 ./docker/ycsb-runner
 ```
 
-Lưu ý: lần đầu build mất ~25-30 phút (tải base image + YCSB 0.17 + PostgreSQL driver). Lần sau nhờ Docker layer cache, gần như instant.
+### 3. Khởi động cluster + tạo schema
 
-### 3. Chạy MongoDB Replica Set
-
+**MongoDB:**
 ```bash
-cd docker/mongodb
-docker compose up -d
-# Đợi ~30s cho healthcheck pass
-docker compose ps   # Expect 3 containers (healthy)
+cd docker/mongodb && docker compose up -d
+# Đợi healthy, rồi init replica set:
+docker exec ycsb-mongo1 mongosh --quiet --eval "rs.initiate({_id:'ycsb-rs',members:[{_id:0,host:'mongo1:27017',priority:2},{_id:1,host:'mongo2:27017',priority:1},{_id:2,host:'mongo3:27017',priority:1}]})"
+```
+MongoDB không cần tạo schema — YCSB tự tạo collection.
+
+**Cassandra:**
+```bash
+cd ../cassandra && docker compose up -d
+# Đợi 5-8 phút cho 3 node UN, rồi tạo schema:
+docker exec ycsb-cass1 cqlsh -e "CREATE KEYSPACE IF NOT EXISTS ycsb WITH replication={'class':'SimpleStrategy','replication_factor':3}; CREATE TABLE IF NOT EXISTS ycsb.usertable (y_id varchar PRIMARY KEY, field0 varchar, field1 varchar, field2 varchar, field3 varchar, field4 varchar, field5 varchar, field6 varchar, field7 varchar, field8 varchar, field9 varchar);"
 ```
 
-Khởi tạo replica set (chỉ làm lần đầu):
-
+**CockroachDB:**
 ```bash
-docker exec ycsb-mongo1 mongosh --quiet --eval "
-rs.initiate({
-  _id: 'ycsb-rs',
-  members: [
-    { _id: 0, host: 'mongo1:27017', priority: 2 },
-    { _id: 1, host: 'mongo2:27017', priority: 1 },
-    { _id: 2, host: 'mongo3:27017', priority: 1 }
-  ]
-})
-"
-```
-
-Verify topology (sau ~15s cho election xong):
-
-```bash
-docker exec ycsb-mongo1 mongosh --quiet --eval \
-  "rs.status().members.forEach(m => print(m.name + ' = ' + m.stateStr))"
-```
-
-Mong đợi: `mongo1:27017 = PRIMARY`, `mongo2/3:27017 = SECONDARY`.
-
-Test YCSB load (100 records, smoke test):
-
-```bash
-docker run --rm --network=ycsb-mongo-rs-net ycsb-runner:0.17.0 \
-  load mongodb -P /opt/ycsb/workloads/workloada \
-  -p mongodb.url="mongodb://mongo1:27017,mongo2:27017,mongo3:27017/ycsb?replicaSet=ycsb-rs" \
-  -p mongodb.writeConcern=majority \
-  -p recordcount=100 -p threadcount=4
-```
-
-### 4. Chạy Cassandra cluster
-
-```bash
-cd ../cassandra
-docker compose up -d
-# Đợi ~5-8 phút (3 node bootstrap tuần tự, gossip protocol)
-docker compose ps
-```
-
-Verify ring:
-
-```bash
-docker exec ycsb-cass1 nodetool status   # Expect 3 lines starting with "UN"
-```
-
-Tạo keyspace + table (chỉ làm lần đầu):
-
-```bash
-docker exec ycsb-cass1 cqlsh -e "
-CREATE KEYSPACE IF NOT EXISTS ycsb WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};
-USE ycsb;
-CREATE TABLE IF NOT EXISTS usertable (
-  y_id varchar PRIMARY KEY,
-  field0 varchar, field1 varchar, field2 varchar, field3 varchar, field4 varchar,
-  field5 varchar, field6 varchar, field7 varchar, field8 varchar, field9 varchar
-);
-"
-```
-
-Test YCSB load:
-
-```bash
-docker run --rm --network=ycsb-cass-cluster-net ycsb-runner:0.17.0 \
-  load cassandra-cql -P /opt/ycsb/workloads/workloada \
-  -p hosts="cass1,cass2,cass3" \
-  -p cassandra.keyspace=ycsb \
-  -p recordcount=100 -p threadcount=4
-```
-
-### 5. Chạy CockroachDB cluster
-
-```bash
-cd ../cockroachdb
-docker compose up -d
-# Đợi ~20s
-```
-
-Init cluster (chỉ làm lần đầu, **bắt buộc**):
-
-```bash
+cd ../cockroachdb && docker compose up -d
+# Init cluster:
 docker exec ycsb-crdb1 cockroach init --insecure --host=crdb1:26257
+# Tạo schema:
+docker exec ycsb-crdb1 cockroach sql --insecure --host=crdb1:26257 -e "CREATE DATABASE IF NOT EXISTS ycsb; USE ycsb; CREATE TABLE IF NOT EXISTS usertable (ycsb_key VARCHAR(255) PRIMARY KEY, field0 TEXT, field1 TEXT, field2 TEXT, field3 TEXT, field4 TEXT, field5 TEXT, field6 TEXT, field7 TEXT, field8 TEXT, field9 TEXT);"
 ```
 
-Đợi 15s, verify:
+### 4. Chạy benchmark
+
+Dùng **Git Bash** (không phải PowerShell — script là `.sh`).
+
+Smoke test trước (10K records, verify pipeline):
+```bash
+cd ycsb/scripts
+RECORDCOUNT=10000 OPERATIONCOUNT=10000 RUNS=1 THREADCOUNT=4 bash run_mongodb.sh
+```
+
+Full benchmark (1M records, 3 runs, mặc định):
+```bash
+bash run_mongodb.sh       # ~2-4 tiếng
+bash run_cassandra.sh     # ~2-4 tiếng
+bash run_cockroachdb.sh   # ~3-5 tiếng
+```
+
+**Lưu ý**: Chạy 1 DB tại 1 thời điểm, stop 2 DB còn lại để giải phóng RAM. Xem `ycsb/scripts/README.md` để biết chi tiết workflow.
+
+### 5. Parse logs → CSV
+
+Sau khi benchmark xong, parse logs thành CSV:
 
 ```bash
-docker exec ycsb-crdb1 cockroach node status --insecure --host=crdb1:26257
+cd analysis
+python parse_logs.py
 ```
 
-Mong đợi: 3 node với `is_available=true`, `is_live=true`.
+Output:
+- `analysis/results/summary/summary_raw.csv` — 1 dòng mỗi run (36 dòng khi đủ 3 DB)
+- `analysis/results/summary/summary_mean.csv` — trung bình theo (db, workload), kèm std/min/max
 
-Tạo database + table:
+CSV này là input cho bước visualize.
 
-```bash
-docker exec ycsb-crdb1 cockroach sql --insecure --host=crdb1:26257 -e "
-CREATE DATABASE IF NOT EXISTS ycsb;
-USE ycsb;
-CREATE TABLE IF NOT EXISTS usertable (
-  ycsb_key VARCHAR(255) PRIMARY KEY,
-  field0 TEXT, field1 TEXT, field2 TEXT, field3 TEXT, field4 TEXT,
-  field5 TEXT, field6 TEXT, field7 TEXT, field8 TEXT, field9 TEXT
-);
-"
-```
+### 6. Visualize (Huy)
 
-Test YCSB load:
-
-```bash
-docker run --rm --network=ycsb-crdb-cluster-net ycsb-runner:0.17.0 \
-  load jdbc -P /opt/ycsb/workloads/workloada \
-  -p db.driver=org.postgresql.Driver \
-  -p db.url="jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable" \
-  -p db.user=root -p db.passwd="" \
-  -p db.batchsize=100 -p jdbc.autocommit=true \
-  -p recordcount=100 -p threadcount=4
-```
-
-## Stop / Restart cluster
-
-```bash
-# Stop (giữ data trong volume — restart sẽ y nguyên)
-docker compose stop
-
-# Start lại (data còn nguyên)
-docker compose start
-
-# Xóa hoàn toàn (data, network, container — phải re-init từ đầu)
-docker compose down -v
-```
+Từ `summary_mean.csv`, vẽ:
+- Throughput grouped bar chart (4 workload × 3 DB)
+- Latency p95/p99 comparison
+- (tùy chọn) scalability, fault tolerance
 
 ## Cấu trúc repo
 
@@ -231,38 +152,47 @@ ycsb-benchmark/
 │   ├── cockroachdb/     # CockroachDB v23.2.4 cluster
 │   └── ycsb-runner/     # YCSB 0.17 + PostgreSQL JDBC driver
 ├── ycsb/
-│   ├── workloads/       # workload_a/b/c/f.properties (Phase 3)
-│   └── scripts/         # run_*.sh (Phase 3)
+│   ├── workloads/       # workload_a/b/c/f.properties
+│   └── scripts/         # common.sh, run_*.sh, README.md
 ├── analysis/
-│   ├── notebooks/       # Jupyter EDA
-│   └── results/         # logs + CSV + figures
-├── docs/                # DEVELOPMENT_LOG.md, HANDOFF.md, ...
-├── report/              # Báo cáo Word + references
+│   ├── parse_logs.py    # parse YCSB logs -> CSV
+│   ├── results/
+│   │   ├── mongodb/     # logs
+│   │   ├── cassandra/
+│   │   ├── cockroachdb/
+│   │   └── summary/     # summary_raw.csv, summary_mean.csv
+│   └── notebooks/       # Jupyter EDA (Huy)
+├── docs/                # DEVELOPMENT_LOG.md, HANDOFF.md
+├── report/              # Báo cáo + references
 └── README.md
 ```
 
-## Baseline số liệu (smoke test, 100 records, 4 threads)
+## Kết quả MongoDB (1M records, 3 runs, threadcount=16)
 
-| DB | Throughput (ops/sec) | Avg latency | p99 latency |
-|----|---------------------|-------------|-------------|
-| MongoDB | 112 | 14.6ms | 152ms |
-| Cassandra | 26 | 14.5ms | 82ms |
-| CockroachDB | 200 | 8.8ms | 40ms |
+| Workload | TB Throughput (ops/sec) | Ghi chú |
+|----------|------------------------|---------|
+| A (50/50 read/update) | ~942 | write qua writeConcern=majority chậm |
+| B (95/5 read/update) | ~3823 | read-heavy |
+| C (100% read) | ~6405 | nhanh nhất |
+| F (50/50 RMW) | ~893 | read-modify-write chậm nhất |
 
-⚠️ **Đây là smoke test sample 100 records, KHÔNG đại diện cho hiệu năng thực tế.** Phase 3 sẽ chạy 1M records để có số liệu benchmark thật.
+Cassandra và CockroachDB sẽ benchmark tiếp.
 
 ## Tài liệu
 
-- `docs/DEVELOPMENT_LOG.md` — Nhật ký kỹ thuật chi tiết: lỗi đã gặp + cách fix
-- `docs/HANDOFF.md` — Context project cho người mới (hoặc AI assistant)
-- Bài báo cơ sở: E. Dritsas and M. Trigka, "Database Systems in the Big Data Era: Architectures, Performance, and Open Challenges," *IEEE Access*, vol. 13, pp. 95068-95084, 2025. [DOI](https://doi.org/10.1109/ACCESS.2025.3572059)
+- `docs/DEVELOPMENT_LOG.md` — Nhật ký kỹ thuật: lỗi đã gặp + cách fix, design decisions
+- `docs/HANDOFF.md` — Context cho người mới / AI assistant
+- `ycsb/scripts/README.md` — Hướng dẫn chi tiết chạy benchmark
+- Bài báo cơ sở: E. Dritsas and M. Trigka, "Database Systems in the Big Data Era," *IEEE Access*, vol. 13, pp. 95068-95084, 2025. [DOI](https://doi.org/10.1109/ACCESS.2025.3572059)
 
 ## Tiến độ
 
 - [x] Phase 0 — Environment setup
 - [x] Phase 1 — Repo structure
 - [x] Phase 2 — 3 cluster + YCSB pipeline verified
-- [ ] Phase 3 — Workload files + run scripts (Huy)
-- [ ] Phase 4 — Benchmark thật (1M records)
-- [ ] Phase 5 — Phân tích Python + biểu đồ
+- [x] Phase 3 — Workload files + run scripts + parse_logs.py
+- [x] Phase 4a — Benchmark MongoDB (1M, 3 runs) ✓
+- [ ] Phase 4b — Benchmark Cassandra
+- [ ] Phase 4c — Benchmark CockroachDB
+- [ ] Phase 5 — Visualize + phân tích (Huy)
 - [ ] Phase 6 — Viết báo cáo

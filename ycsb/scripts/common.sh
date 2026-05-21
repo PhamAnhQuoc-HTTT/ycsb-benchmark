@@ -10,6 +10,11 @@
 # Default = full benchmark (1M). For smoke testing use small values.
 # ============================================================
 
+# Disable MSYS2/Git Bash path conversion (Windows).
+# Without this, container-internal paths like /workloads get mangled
+# into Windows paths (e.g. C:/Program Files/Git/workloads).
+export MSYS_NO_PATHCONV=1
+
 # --- Tunable parameters (override via env) ---
 RECORDCOUNT="${RECORDCOUNT:-1000000}"
 OPERATIONCOUNT="${OPERATIONCOUNT:-1000000}"
