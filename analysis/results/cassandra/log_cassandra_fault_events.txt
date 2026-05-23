@@ -1,0 +1,4 @@
+[2026-05-23 16:41:04] START benchmark (workload A, -s status mode)
+[2026-05-23 16:41:35] STOP node ycsb-cass3 (fault injection)
+[2026-05-23 16:42:37] START node ycsb-cass3 (recovery)
+[2026-05-23 16:47:44] END benchmark

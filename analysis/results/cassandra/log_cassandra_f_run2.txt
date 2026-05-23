@@ -1,0 +1,69 @@
+/opt/java/openjdk/bin/java -cp /opt/ycsb/cassandra-binding/conf:/opt/ycsb/conf:/opt/ycsb/lib/core-0.17.0.jar:/opt/ycsb/lib/HdrHistogram-2.1.4.jar:/opt/ycsb/lib/jackson-mapper-asl-1.9.4.jar:/opt/ycsb/lib/htrace-core4-4.1.0-incubating.jar:/opt/ycsb/lib/jackson-core-asl-1.9.4.jar:/opt/ycsb/cassandra-binding/lib/netty-handler-4.0.33.Final.jar:/opt/ycsb/cassandra-binding/lib/netty-common-4.0.33.Final.jar:/opt/ycsb/cassandra-binding/lib/guava-16.0.1.jar:/opt/ycsb/cassandra-binding/lib/netty-transport-4.0.33.Final.jar:/opt/ycsb/cassandra-binding/lib/metrics-core-3.1.2.jar:/opt/ycsb/cassandra-binding/lib/netty-codec-4.0.33.Final.jar:/opt/ycsb/cassandra-binding/lib/slf4j-api-1.7.25.jar:/opt/ycsb/cassandra-binding/lib/cassandra-driver-core-3.0.0.jar:/opt/ycsb/cassandra-binding/lib/cassandra-binding-0.17.0.jar:/opt/ycsb/cassandra-binding/lib/netty-buffer-4.0.33.Final.jar site.ycsb.Client -db site.ycsb.db.CassandraCQLClient -P /workloads/workload_f.properties -p hosts=cass1,cass2,cass3 -p cassandra.keyspace=ycsb -p recordcount=1000000 -p operationcount=1000000 -p threadcount=16 -t
+Command line: -db site.ycsb.db.CassandraCQLClient -P /workloads/workload_f.properties -p hosts=cass1,cass2,cass3 -p cassandra.keyspace=ycsb -p recordcount=1000000 -p operationcount=1000000 -p threadcount=16 -t
+YCSB Client 0.17.0
+
+Loading workload...
+Starting test.
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by io.netty.util.internal.PlatformDependent0 (file:/opt/ycsb/cassandra-binding/lib/netty-common-4.0.33.Final.jar) to field java.nio.Buffer.address
+WARNING: Please consider reporting this to the maintainers of io.netty.util.internal.PlatformDependent0
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+May 23, 2026 9:19:22 AM io.netty.util.internal.PlatformDependent <clinit>
+INFO: Your platform does not provide complete low-level API for accessing direct buffers reliably. Unless explicitly requested, heap buffer will always be preferred to avoid potential system unstability.
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+[OVERALL], RunTime(ms), 424094
+[OVERALL], Throughput(ops/sec), 2357.967809023471
+[TOTAL_GCS_G1_Young_Generation], Count, 75
+[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 888
+[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.20938754144128424
+[TOTAL_GCS_G1_Old_Generation], Count, 0
+[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0
+[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0
+[TOTAL_GCs], Count, 75
+[TOTAL_GC_TIME], Time(ms), 888
+[TOTAL_GC_TIME_%], Time(%), 0.20938754144128424
+[READ], Operations, 1000000
+[READ], AverageLatency(us), 5196.398682
+[READ], MinLatency(us), 411
+[READ], MaxLatency(us), 1998847
+[READ], 95thPercentileLatency(us), 12303
+[READ], 99thPercentileLatency(us), 29967
+[READ], Return=OK, 1000000
+[READ-MODIFY-WRITE], Operations, 500583
+[READ-MODIFY-WRITE], AverageLatency(us), 8234.38513693034
+[READ-MODIFY-WRITE], MinLatency(us), 1032
+[READ-MODIFY-WRITE], MaxLatency(us), 1999871
+[READ-MODIFY-WRITE], 95thPercentileLatency(us), 20015
+[READ-MODIFY-WRITE], 99thPercentileLatency(us), 38527
+[CLEANUP], Operations, 16
+[CLEANUP], AverageLatency(us), 139734.5625
+[CLEANUP], MinLatency(us), 4
+[CLEANUP], MaxLatency(us), 2236415
+[CLEANUP], 95thPercentileLatency(us), 262
+[CLEANUP], 99thPercentileLatency(us), 2236415
+[UPDATE], Operations, 500583
+[UPDATE], AverageLatency(us), 3018.3676712952697
+[UPDATE], MinLatency(us), 314
+[UPDATE], MaxLatency(us), 1257471
+[UPDATE], 95thPercentileLatency(us), 7067
+[UPDATE], 99thPercentileLatency(us), 22623
+[UPDATE], Return=OK, 500583
