@@ -1,0 +1,4 @@
+[2026-05-23 17:02:23] START benchmark (workload A, -s status mode)
+[2026-05-23 17:02:54] STOP node ycsb-mongo3 (fault injection)
+[2026-05-23 17:03:59] START node ycsb-mongo3 (recovery)
+[2026-05-23 17:19:00] END benchmark
