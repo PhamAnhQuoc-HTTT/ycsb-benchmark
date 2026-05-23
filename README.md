@@ -192,7 +192,7 @@ Cassandra và CockroachDB sẽ benchmark tiếp.
 - [x] Phase 2 — 3 cluster + YCSB pipeline verified
 - [x] Phase 3 — Workload files + run scripts + parse_logs.py
 - [x] Phase 4a — Benchmark MongoDB (1M, 3 runs) ✓
-- [ ] Phase 4b — Benchmark Cassandra
+- [x] Phase 4b — Benchmark Cassandra
 - [ ] Phase 4c — Benchmark CockroachDB
 - [ ] Phase 5 — Visualize + phân tích (Huy)
 - [ ] Phase 6 — Viết báo cáo
