@@ -454,3 +454,80 @@ Khi viết Chương 3, các references nên cite:
 - **CockroachDB docs**: Architecture overview, Raft layer — Section 3.3
 
 Đường link đầy đủ trong `PROMPT_Do_an_YCSB.md` ở root project (file gốc của đề tài).
+
+---
+
+# PHASE 4 — BENCHMARK & FAULT TOLERANCE (bổ sung)
+
+> Phần này append vào DEVELOPMENT_LOG.md hiện có, ghi lại Phase 4 (thu thập dữ liệu).
+
+## 4.1 Cấu hình benchmark
+
+- recordcount = 1,000,000 (1M records, mỗi record 10 field × 100 byte ≈ 1KB)
+- operationcount = 1,000,000
+- threadcount = 16
+- runs = 3 (mỗi workload chạy 3 lần lấy trung bình)
+- requestdistribution = zipfian
+- Workloads: A (50/50 read/update), B (95/5), C (100% read), F (50/50 read/read-modify-write)
+
+Mỗi DB chạy tuần tự (stop 2 DB còn lại + SE104 để giải phóng RAM, tránh resource contention).
+
+## 4.2 Lỗi #6 — Cassandra load chỉ đạt 938K/1M (write timeout)
+
+**Hiện tượng**: Lần load Cassandra đầu tiên, YCSB report `[INSERT], Return=OK, 753323` (thiếu ~247K). Verify bằng `nodetool tablestats` cho thấy thực tế có ~938K partitions.
+
+**Nguyên nhân**: Với threadcount=16, Cassandra dưới tải ghi cao bị write timeout (default `write_request_timeout_in_ms = 2000ms`). Insert timeout không được đếm vào Return=OK.
+
+**Cách fix**: Tăng write timeout runtime trên cả 3 node (không cần restart):
+```bash
+docker exec ycsb-cass1 nodetool settimeout write 10000
+docker exec ycsb-cass2 nodetool settimeout write 10000
+docker exec ycsb-cass3 nodetool settimeout write 10000
+```
+Sau đó TRUNCATE + load lại → đạt đủ 1,000,000 (verify: 1,006,650 partitions estimate).
+
+**LƯU Ý QUAN TRỌNG cho reproducibility**: `nodetool settimeout` chỉ có hiệu lực runtime — mất khi container restart. Để tái tạo, cần chạy lại 3 lệnh trên SAU mỗi lần start cluster Cassandra, TRƯỚC khi load. (Cải tiến tương lai: set `write_request_timeout_in_ms` trong cassandra.yaml qua docker-compose.)
+
+## 4.3 Kết quả Throughput (ops/sec, trung bình 3 runs)
+
+| Workload | MongoDB | Cassandra | CockroachDB |
+|----------|--------:|----------:|------------:|
+| A (50/50) | 941.82 | 4010.62 | 1019.33 |
+| B (95/5) | 3822.53 | 3418.69 | 2514.14 |
+| C (100% read) | 6405.01 | 3347.35 | 3841.68 |
+| F (RMW) | 892.47 | 2258.19 | 770.67 |
+
+Độ biến thiên (CV = std/mean): hầu hết < 7%, riêng Cassandra B/C ~11-13% (biến động cache đọc). Không có outlier.
+
+**Phân tích:**
+- Cassandra mạnh ghi (A, F) — LSM-tree append-only.
+- MongoDB mạnh đọc (B, C) — B-tree + WiredTiger cache.
+- CockroachDB ổn định nhất (CV ~2%) nhưng throughput vừa phải — overhead Raft consensus cho strong consistency.
+
+## 4.4 Fault tolerance test
+
+Script `run_fault_tolerance.sh <db>`: chạy workload A với flag `-s` (throughput mỗi 10s), dừng 1 node sau 30s, khởi động lại sau 60s.
+
+| | MongoDB | Cassandra | CockroachDB |
+|--|---------|-----------|-------------|
+| Node dừng | mongo3 (SECONDARY) | cass3 | crdb3 |
+| Operation fail | Không | Không | **UPDATE-FAILED** (lúc re-elect leader) |
+| Throughput thấp nhất | ~490 | ~1100 | ~401 |
+| Latency spike | 5-7s | ~2s | ~4s |
+| CAP | CP-leaning | AP | CP (strict) |
+
+**Quan sát chính:**
+- MongoDB: PRIMARY vẫn phục vụ khi mất SECONDARY (writeConcern=majority cần 2/3). Khi node rejoin, throughput tụt mạnh do oplog catch-up.
+- Cassandra: không downtime, không operation fail — RF=3 + CL=ONE cho phép phục vụ với 2/3 node. AP điển hình.
+- CockroachDB: xuất hiện UPDATE-FAILED trong vài giây đầu khi Raft re-elect leader cho các range có leader ở node bị dừng. CP nghiêm ngặt.
+
+## 4.5 Tổng kết Phase 4
+
+- 36 benchmark logs (3 DB × 4 WL × 3 runs) + 3 load logs
+- 3 fault tolerance logs + 3 events logs
+- parse_logs.py → summary_raw.csv (36 dòng) + summary_mean.csv (12 dòng)
+- Toàn bộ data verified (đủ 1M mỗi DB, mean = avg(raw), không null/outlier)
+
+Thời gian chạy thực tế: MongoDB ~2.5h, Cassandra ~1h (sau khi fix), CockroachDB ~2.7h.
+
+Tổng số commit Phase 3-4: ~8 commit, linear history.

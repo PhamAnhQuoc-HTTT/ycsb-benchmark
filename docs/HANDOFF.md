@@ -228,3 +228,56 @@ docker build -t ycsb-runner:0.17.0 .
 ---
 
 **File last updated**: Phase 2 complete (3 cluster + YCSB pipeline verified, end-to-end smoke test passed for all 3 DBs)
+
+---
+
+# CẬP NHẬT SAU PHASE 4 (bổ sung HANDOFF)
+
+> Append vào HANDOFF.md. Cập nhật trạng thái dự án sau khi hoàn tất thu thập dữ liệu.
+
+## Trạng thái hiện tại: DATA COLLECTION HOÀN TẤT
+
+| Hạng mục | Trạng thái |
+|----------|:---:|
+| 3 cluster Docker (Mongo/Cass/CRDB) | ✅ |
+| YCSB runner image | ✅ |
+| Workload configs (a/b/c/f) | ✅ |
+| Run scripts + parse_logs.py | ✅ |
+| Benchmark 1M × 3 runs (cả 3 DB) | ✅ |
+| Fault tolerance (cả 3 DB) | ✅ |
+| summary CSV (raw 36 + mean 12) | ✅ |
+| Visualize | ⬜ (Huy) |
+| Phân tích Chương 4.4 | ⬜ (Huy) |
+| Lý thuyết Chương 2 | ⬜ (Huy) |
+| Báo cáo | ⬜ |
+
+## Phân công còn lại
+
+**Quốc (xong phần kỹ thuật)** — hỗ trợ Huy khi cần, viết Chương 3 (phương pháp) + phụ lục.
+
+**Huy** — xem chi tiết tại `docs/TASK_FOR_HUY.md`:
+1. Visualize từ summary_mean.csv + fault logs
+2. Phân tích kết quả (Chương 4.4)
+3. Lý thuyết 3 hệ thống (Chương 2)
+
+## Dữ liệu đã sẵn sàng
+
+- `analysis/results/summary/summary_mean.csv` — 12 dòng, file chính để vẽ
+- `analysis/results/summary/summary_raw.csv` — 36 dòng, từng run
+- `analysis/results/<db>/log_<db>_a_fault.txt` — timeline fault tolerance (3 file)
+- `analysis/results/<db>/log_<db>_fault_events.txt` — mốc stop/start node (3 file)
+
+## Lưu ý vận hành (nếu cần chạy lại)
+
+1. **Cassandra write timeout**: SAU mỗi lần start cluster Cassandra, chạy `nodetool settimeout write 10000` trên cả 3 node TRƯỚC khi load (nếu không sẽ thiếu records). Xem DEVELOPMENT_LOG mục 4.2.
+2. **Chạy 1 DB tại 1 thời điểm** — stop 2 DB còn lại để đủ RAM.
+3. **CockroachDB không cần `cockroach init` lại** sau khi start (chỉ lần đầu).
+4. **Cassandra start mất 5-8 phút** (gossip re-sync) — đợi 3 node UN trước khi thao tác.
+5. **Git Bash chạy script .sh**, đã có `MSYS_NO_PATHCONV=1` trong common.sh để tránh path mangling.
+
+## Số liệu nhanh (để Huy đối chiếu khi vẽ)
+
+Throughput (ops/sec): xem bảng trong README hoặc summary_mean.csv.
+- Cao nhất: MongoDB workload C = 6405
+- Thấp nhất: CockroachDB workload F = 771
+- Cassandra thắng A/F (ghi), MongoDB thắng B/C (đọc).
