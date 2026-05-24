@@ -1,0 +1,4 @@
+[2026-05-24 15:31:03] START benchmark (workload A, -s status mode)
+[2026-05-24 15:31:34] STOP node ycsb-crdb3 (fault injection)
+[2026-05-24 15:32:36] START node ycsb-crdb3 (recovery)
+[2026-05-24 15:50:08] END benchmark

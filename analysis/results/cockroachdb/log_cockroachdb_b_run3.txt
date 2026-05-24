@@ -1,0 +1,85 @@
+/opt/java/openjdk/bin/java -cp /opt/ycsb/jdbc-binding/conf:/opt/ycsb/conf:/opt/ycsb/lib/core-0.17.0.jar:/opt/ycsb/lib/HdrHistogram-2.1.4.jar:/opt/ycsb/lib/jackson-mapper-asl-1.9.4.jar:/opt/ycsb/lib/htrace-core4-4.1.0-incubating.jar:/opt/ycsb/lib/jackson-core-asl-1.9.4.jar:/opt/ycsb/jdbc-binding/lib/commons-lang-2.4.jar:/opt/ycsb/jdbc-binding/lib/openjpa-lib-2.1.1.jar:/opt/ycsb/jdbc-binding/lib/serp-1.13.1.jar:/opt/ycsb/jdbc-binding/lib/openjpa-kernel-2.1.1.jar:/opt/ycsb/jdbc-binding/lib/commons-pool-1.5.4.jar:/opt/ycsb/jdbc-binding/lib/commons-collections-3.2.1.jar:/opt/ycsb/jdbc-binding/lib/geronimo-jms_1.1_spec-1.1.1.jar:/opt/ycsb/jdbc-binding/lib/geronimo-jta_1.1_spec-1.1.1.jar:/opt/ycsb/jdbc-binding/lib/jdbc-binding-0.17.0.jar:/opt/ycsb/jdbc-binding/lib/openjpa-jdbc-2.1.1.jar:/opt/ycsb/jdbc-binding/lib/postgresql-42.7.3.jar site.ycsb.Client -db site.ycsb.db.JdbcDBClient -P /workloads/workload_b.properties -p db.driver=org.postgresql.Driver -p db.url=jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable -p db.user=root -p db.passwd= -p db.batchsize=100 -p jdbc.autocommit=true -p recordcount=1000000 -p operationcount=1000000 -p threadcount=16 -t
+Command line: -db site.ycsb.db.JdbcDBClient -P /workloads/workload_b.properties -p db.driver=org.postgresql.Driver -p db.url=jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable -p db.user=root -p db.passwd= -p db.batchsize=100 -p jdbc.autocommit=true -p recordcount=1000000 -p operationcount=1000000 -p threadcount=16 -t
+YCSB Client 0.17.0
+
+Loading workload...
+Starting test.
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Adding shard node URL: jdbc:postgresql://crdb1:26257/ycsb?sslmode=disable
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+Using shards: 1, batchSize:100, fetchSize: -1
+
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+DBWrapper: report latency for each error is false and specific error codes to track for latency are: []
+[OVERALL], RunTime(ms), 389416
+[OVERALL], Throughput(ops/sec), 2567.947901472975
+[TOTAL_GCS_G1_Young_Generation], Count, 14
+[TOTAL_GC_TIME_G1_Young_Generation], Time(ms), 135
+[TOTAL_GC_TIME_%_G1_Young_Generation], Time(%), 0.03466729666988516
+[TOTAL_GCS_G1_Old_Generation], Count, 0
+[TOTAL_GC_TIME_G1_Old_Generation], Time(ms), 0
+[TOTAL_GC_TIME_%_G1_Old_Generation], Time(%), 0.0
+[TOTAL_GCs], Count, 14
+[TOTAL_GC_TIME], Time(ms), 135
+[TOTAL_GC_TIME_%], Time(%), 0.03466729666988516
+[READ], Operations, 950232
+[READ], AverageLatency(us), 5619.490151878699
+[READ], MinLatency(us), 371
+[READ], MaxLatency(us), 971263
+[READ], 95thPercentileLatency(us), 11431
+[READ], 99thPercentileLatency(us), 16655
+[READ], Return=OK, 950232
+[CLEANUP], Operations, 16
+[CLEANUP], AverageLatency(us), 320.4375
+[CLEANUP], MinLatency(us), 153
+[CLEANUP], MaxLatency(us), 1825
+[CLEANUP], 95thPercentileLatency(us), 375
+[CLEANUP], 99thPercentileLatency(us), 1825
+[UPDATE], Operations, 49768
+[UPDATE], AverageLatency(us), 17477.302503616782
+[UPDATE], MinLatency(us), 3098
+[UPDATE], MaxLatency(us), 1263615
+[UPDATE], 95thPercentileLatency(us), 31663
+[UPDATE], 99thPercentileLatency(us), 123391
+[UPDATE], Return=OK, 49768
