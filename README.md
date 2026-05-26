@@ -24,14 +24,14 @@ Bài báo cơ sở: Dritsas & Trigka (2025), "Database Systems in the Big Data E
 
 ## Trạng thái dự án
 
-**Thu thập dữ liệu HOÀN TẤT** ✅ — 3 DB × 4 workload × 3 runs + fault tolerance cho cả 3 DB.
+**Benchmark + visualize HOÀN TẤT** ✅ — 3 DB × 4 workload × 3 runs + fault tolerance cho cả 3 DB, kèm notebook và biểu đồ tái tạo được.
 
 - [x] Phase 0 — Environment setup (Docker, WSL2, Java 11, YCSB 0.17)
 - [x] Phase 1 — Repo structure
 - [x] Phase 2 — 3 cluster + YCSB runner pipeline verified
 - [x] Phase 3 — Workload configs + run scripts + parse_logs.py
 - [x] Phase 4 — Benchmark 1M + fault tolerance (MongoDB, Cassandra, CockroachDB) ✓
-- [ ] Phase 5 — Visualize + phân tích (Huy)
+- [x] Phase 5 — Visualize + phân tích kết quả (Huy)
 - [ ] Phase 6 — Viết báo cáo
 
 ## Kết quả Throughput (ops/sec, trung bình 3 runs, 1M records, threadcount=16)
@@ -62,6 +62,35 @@ Bài báo cơ sở: Dritsas & Trigka (2025), "Database Systems in the Big Data E
 
 → Ba hệ thống thể hiện ba hành vi CAP khác biệt rõ rệt — minh chứng thực nghiệm cho trade-off lý thuyết.
 
+## Biểu đồ kết quả
+
+Notebook visualize: `analysis/notebooks/visualize_ycsb.ipynb`  
+Output hình: `analysis/results/figures/` (`.png` dùng cho báo cáo Word, `.svg` dùng cho slide).
+
+### Throughput tổng quan
+
+![Throughput comparison](analysis/results/figures/01_throughput.png)
+
+### Latency đọc/ghi
+
+<p align="center">
+  <img src="analysis/results/figures/02_read_latency.png" alt="Read latency p95 and p99" width="49%">
+  <img src="analysis/results/figures/03_update_latency_p99.png" alt="Update latency p99" width="49%">
+</p>
+
+### Fault tolerance
+
+Biểu đồ này tách riêng 3 timeline vì thời lượng benchmark khác nhau giữa các DB. CockroachDB có điểm `UPDATE-FAILED`, thể hiện rõ trade-off CP khi node bị dừng.
+
+![Fault tolerance timeline](analysis/results/figures/04_fault_tolerance.png)
+
+### Load phase và độ ổn định
+
+<p align="center">
+  <img src="analysis/results/figures/05_load_insert_latency.png" alt="Load insert latency" width="49%">
+  <img src="analysis/results/figures/06_throughput_stability.png" alt="Throughput stability" width="49%">
+</p>
+
 ## Kiến trúc thực nghiệm
 
 ```
@@ -81,7 +110,8 @@ YCSB chạy **trong container** (image `ycsb-runner:0.17.0`), join chung Docker 
 |------|---------|---------|
 | Docker Desktop | 24.0+ với WSL2 | Cấp ≥ 16GB RAM cho WSL2 (`~/.wslconfig`) |
 | Java | 11 (Temurin) | Runner image tự bundle Java 11 |
-| Python | 3.11 | Cho parse + visualize |
+| Python | 3.11+ | Cho parse + visualize; notebook đã verify với Python 3.13 trên Windows |
+| Python packages | pandas, matplotlib, seaborn, notebook | Cho notebook visualize |
 | Git Bash | (kèm Git for Windows) | Để chạy script `.sh` trên Windows |
 
 ## Quick Start
@@ -151,9 +181,18 @@ python parse_logs.py
 
 Output: `analysis/results/summary/summary_raw.csv` (36 dòng) + `summary_mean.csv` (12 dòng).
 
-### 6. Visualize + phân tích (Huy)
+### 6. Visualize bằng notebook
 
-Xem hướng dẫn chi tiết tại **`docs/TASK_FOR_HUY.md`**.
+Nếu dùng Windows Python Launcher:
+
+```powershell
+py -3.13 -m pip install pandas matplotlib seaborn notebook
+py -3.13 -m notebook analysis\notebooks\visualize_ycsb.ipynb
+```
+
+Hoặc mở trực tiếp `analysis/notebooks/visualize_ycsb.ipynb` bằng VS Code/Jupyter và chọn **Run All**.
+
+Notebook sẽ đọc dữ liệu từ `analysis/results/`, vẽ lại 6 biểu đồ và lưu PNG/SVG vào `analysis/results/figures/`.
 
 ## Cấu trúc repo
 
@@ -168,20 +207,18 @@ ycsb-benchmark/
 │   ├── parse_logs.py
 │   ├── results/
 │   │   ├── mongodb/  cassandra/  cockroachdb/   # logs + fault logs
-│   │   └── summary/  # summary_raw.csv, summary_mean.csv
-│   └── notebooks/    # (Huy) Jupyter EDA + visualize
+│   │   ├── summary/  # summary_raw.csv, summary_mean.csv
+│   │   └── figures/  # PNG/SVG visualizations
+│   └── notebooks/    # visualize_ycsb.ipynb
 ├── docs/
-│   ├── DEVELOPMENT_LOG.md   # nhật ký kỹ thuật
-│   ├── HANDOFF.md           # context dự án
-│   └── TASK_FOR_HUY.md      # hướng dẫn chi tiết phần Huy
+│   └── DEVELOPMENT_LOG.md   # nhật ký kỹ thuật
 └── report/                  # báo cáo + references
 ```
 
 ## Tài liệu
 
 - `docs/DEVELOPMENT_LOG.md` — Nhật ký kỹ thuật: môi trường, lỗi đã gặp + cách fix, design decisions, kết quả
-- `docs/HANDOFF.md` — Context cho người mới / AI assistant
-- `docs/TASK_FOR_HUY.md` — Việc cần làm + hướng dẫn cho Huy (visualize, phân tích)
+- `analysis/notebooks/visualize_ycsb.ipynb` — Notebook tạo 6 biểu đồ và ghi chú phân tích
 - `ycsb/scripts/README.md` — Hướng dẫn chi tiết chạy benchmark
 
 Repo: https://github.com/PhamAnhQuoc-HTTT/ycsb-benchmark
