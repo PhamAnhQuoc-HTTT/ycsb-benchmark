@@ -24,15 +24,13 @@ Bài báo cơ sở: Dritsas & Trigka (2025), "Database Systems in the Big Data E
 
 ## Trạng thái dự án
 
-**Benchmark + visualize HOÀN TẤT** ✅ — 3 DB × 4 workload × 3 runs + fault tolerance cho cả 3 DB, kèm notebook và biểu đồ tái tạo được.
-
 - [x] Phase 0 — Environment setup (Docker, WSL2, Java 11, YCSB 0.17)
 - [x] Phase 1 — Repo structure
 - [x] Phase 2 — 3 cluster + YCSB runner pipeline verified
 - [x] Phase 3 — Workload configs + run scripts + parse_logs.py
-- [x] Phase 4 — Benchmark 1M + fault tolerance (MongoDB, Cassandra, CockroachDB) ✓
-- [x] Phase 5 — Visualize + phân tích kết quả (Huy)
-- [ ] Phase 6 — Viết báo cáo
+- [x] Phase 4 — Benchmark 1M + fault tolerance (MongoDB, Cassandra, CockroachDB)
+- [x] Phase 5 — Visualize + phân tích kết quả
+- [x] Phase 6 — Viết báo cáo
 
 ## Kết quả Throughput (ops/sec, trung bình 3 runs, 1M records, threadcount=16)
 
